@@ -1,0 +1,50 @@
+name: Generate Documentation
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  sphinx-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install Sphinx and dependencies
+      run: |
+        pip install sphinx sphinx-rtd-theme
+        
+    - name: Generate Sphinx documentation
+      run: |
+        cd docs
+        sphinx-apidoc -o . ../src
+        make html
+        
+    - name: Setup GitHub Pages
+      uses: actions/configure-pages@v2
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: docs/_build/html
+
+  deploy:
+    needs: sphinx-docs
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
