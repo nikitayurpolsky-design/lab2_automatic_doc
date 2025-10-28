@@ -1,9 +1,9 @@
 # Информация о сборке
 
 ## Детали
-- **Время**: Tue Oct 28 12:40:30 UTC 2025
-- **Коммит**: fff4fd811f80a05bd6492f06866851af07e19700
+- **Время**: Tue Oct 28 13:00:32 UTC 2025
+- **Коммит**: 7f0a501c905f8807e956cf29f8778d85ba7b297e
 - **Автор**: nikitayurpolsky-design
-- **Ссылка**: https://github.com/nikitayurpolsky-design/lab2_automatic_doc/commit/fff4fd811f80a05bd6492f06866851af07e19700
+- **Ссылка**: https://github.com/nikitayurpolsky-design/lab2_automatic_doc/commit/7f0a501c905f8807e956cf29f8778d85ba7b297e
 
-Сообщение коммита: Fix: update workflow permissions
+Сообщение коммита: TEST: Добавлена функция умножения для проверки CI/CD
