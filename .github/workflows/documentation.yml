@@ -5,46 +5,71 @@ on:
     branches: [ main, master ]
 
 jobs:
-  sphinx-docs:
+  build-docs:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.x'
         
-    - name: Install Sphinx and dependencies
+    - name: Create auto-generated documentation
       run: |
-        pip install sphinx sphinx-rtd-theme
+        # Создаём папку для автоматической документации
+        mkdir -p docs/auto
         
-    - name: Generate Sphinx documentation
+        # Создаём автоматически генерируемую документацию
+        cat > docs/auto/build-info.md << EOF
+        # Информация о сборке
+        
+        ## Детали последней сборки
+        - **Дата сборки**: $(date)
+        - **Хэш коммита**: ${{ github.sha }}
+        - **Ветка**: ${{ github.ref }}
+        - **Автор**: ${{ github.actor }}
+        - **Ссылка на коммит**: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+        
+        ## Сообщение коммита
+        \`\`\`
+        $(git log -1 --pretty=format:"%s")
+        \`\`\`
+        
+        Эта документация была сгенерирована автоматически.
+        EOF
+        
+    - name: Update documentation index
       run: |
-        cd docs
-        sphinx-apidoc -o . ../src
-        make html
+        # Создаём основной индекс документации
+        cat > docs/README.md << EOF
+        # Документация проекта
         
-    - name: Setup GitHub Pages
-      uses: actions/configure-pages@v2
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
-      with:
-        path: docs/_build/html
-
-  deploy:
-    needs: sphinx-docs
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+        ## Ручная документация
+        - [Главная страница](index.md)
+        
+        ## Автоматическая документация  
+        - [Информация о сборке](auto/build-info.md)
+        
+        ## Статус CI/CD
+        ![CI/CD Status](https://github.com/${{ github.repository }}/workflows/Generate%20Documentation/badge.svg)
+        
+        *Последнее обновление: $(date)*
+        EOF
+        
+    - name: Commit and push documentation
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add docs/
+        # Проверяем есть ли изменения перед коммитом
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Auto-generated documentation [skip ci]"
+          git push
+        fi
